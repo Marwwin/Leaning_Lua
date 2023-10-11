@@ -78,7 +78,8 @@ function AOC.reduce(t, fn, initalValue)
       initalValue = 0
     elseif type(t[1]) == "string" then
       initalValue = ""
-    else initalValue = {}
+    else
+      initalValue = {}
     end
   end
 
@@ -124,6 +125,7 @@ function AOC.parse_arg()
 
   for i, arg in ipairs(args) do
     if arg == "run" then AOC.run_day(args[i + 1], config) end
+    if arg == "test" then AOC.run_test(args[i + 1], config) end
     if arg == "create" then AOC.create(args[i + 1], config) end
   end
 end
@@ -139,8 +141,9 @@ end
 
 function AOC.create(day_number, config)
   os.execute("mkdir " .. day_number)
-  os.execute("touch " .. day_number .. "/input")
-  os.execute("touch " .. day_number .. "/test")
+  os.execute("touch " .. day_number .. "/input.data")
+  os.execute("touch " .. day_number .. "/test.data")
+  os.execute("cat .config/test.lua " .. day_number .. "/test.lua")
   os.execute("cat .config/init_day.lua >> " .. day_number .. "/solution.lua")
 end
 
@@ -152,6 +155,10 @@ function AOC.run_day(day_number, config)
   local day = require(day_number .. "/solution")
   print("part1: ", day:part1(data))
   print("part2: ", day:part2(data))
+end
+
+function AOC.run_test(day_number, config)
+  os.execute("busted " .. day_number .. "/test.lua")
 end
 
 AOC.parse_arg()
