@@ -65,6 +65,7 @@ function AOC.filter(t, fn)
   for _, v in pairs(t) do
     if fn(v) then table.insert(result, v) end
   end
+  return result
 end
 
 function AOC.at(str, i)
@@ -72,14 +73,29 @@ function AOC.at(str, i)
 end
 
 function AOC.reduce(t, fn, initalValue)
-  initalValue = initalValue or {}
+  if initalValue == nil then
+    if type(t[1]) == "number" then
+      initalValue = 0
+    elseif type(t[1]) == "string" then
+      initalValue = ""
+    else initalValue = {}
+    end
+  end
+
   for _, v in pairs(t) do
     initalValue = fn(initalValue, v)
   end
   return initalValue
 end
 
+local acc = {}
+AOC.acc = acc
+function acc.sum(accumulator, current)
+  return accumulator + current
+end
+
 function AOC.split(str, char)
+  if char == "" then return AOC.split_each_char(str) end
   local result = {}
   for v in str:gmatch("[^" .. char .. "]+") do
     table.insert(result, v)
@@ -87,8 +103,16 @@ function AOC.split(str, char)
   return result
 end
 
+function AOC.split_each_char(str)
+  local result = {}
+  for i = 1, #str do
+    table.insert(result, str:sub(i, i))
+  end
+  return result
+end
+
 function AOC.print_t(t)
-  for i,v in pairs(t) do print(i,v) end
+  for i, v in pairs(t) do print(i, v) end
 end
 
 -- CLI Commands
