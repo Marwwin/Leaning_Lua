@@ -124,6 +124,7 @@ function AOC.parse_arg()
   local config = AOC.parse_config()
 
   for i, arg in ipairs(args) do
+    print(arg)
     if arg == "run" then AOC.run_day(args[i + 1], config) end
     if arg == "test" then AOC.run_test(args[i + 1], config) end
     if arg == "create" then AOC.create(args[i + 1], config) end

@@ -7,9 +7,25 @@ local Action = {
   WAKE_UP = 3
 }
 
-day.Action = Action
+local ActionMetatable = {
+  __tostring = function(self)
+    for key, value in pairs(Action) do
+      if value == self then return value end
+    end
+    return "Unknown Action"
+  end
+}
 
+setmetatable(Action, ActionMetatable)
+
+day.Action = Action
 function day:part1(input_data)
+  print(input_data)
+  for key,value in ipairs(input_data) do
+    print(value)
+  end
+end
+function day:part1_temp(input_data)
   local events = AOC.map(input_data, day.parse_input)
   events = day.sort_events(events)
   events = day.count_sleep(events)
@@ -22,20 +38,31 @@ function day.count_sleep(events)
   local result = {}
   local id = 0
   for _, event in ipairs(events) do
-    print(event.id, event.day, event.action)
+    print("id", event.id, "day", event.day, "action", tostring(event.action))
+  end
+  for _, event in ipairs(events) do
+    
+    print("event", event.id, event.day, event.hour, event.action)
     if event.action == Action.START_WORK then
-      id = event.id
       if not result[id] then
         result[id] = {}
-        result[id][event.day] = {}
       end
+      local guard = result[id]
+      if not guard[event.month] then guard[event.month] = {} end
+      if not guard[event.month][event.day] then guard[event.month][event.day] = {} end
+      local tomorrow = os.date("*t", os.time({ year = event.year, month = event.month, day = event.day }) + 24 * 60 * 60)
+      if not guard[tomorrow.month] then guard[tomorrow.month] = {} end
+      if not guard[tomorrow.month][tomorrow.day] then guard[tomorrow.month][tomorrow.day] = {} end
+      print("start", guard[event.month][event.day], guard[tomorrow.month][tomorrow.day])
     end
     if event.action == Action.FALL_ASLEEP then
-      result[id][event.day].fall_asleep = event.minute
+      print("sleep", event.day)
+      print(result[id][event.month][event.day], "day")
+      result[id][event.month][event.day].fall_asleep = event.minute
     end
     if event.action == Action.WAKE_UP then
-      result[id][event.day].wakeup = event.minute
-      result[id][event.day].slept = event.minute - result[id][event.day].fall_asleep
+      result[id][event.month][event.day].wakeup = event.minute
+      result[id][event.month][event.day].slept = event.minute - result[id][event.month][event.day].fall_asleep
     end
   end
   return result
