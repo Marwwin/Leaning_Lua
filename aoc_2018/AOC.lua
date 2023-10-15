@@ -3,9 +3,9 @@ local AOC = {}
 function AOC.get_input(fileName, use_test_data)
   local file
   if use_test_data then
-    file = io.open(fileName .. "/test", "r")
+    file = io.open(fileName .. "/test.data", "r")
   else
-    file = io.open(fileName .. "/input", "r")
+    file = io.open(fileName .. "/input.data", "r")
   end
 
   if not file then
@@ -149,6 +149,7 @@ function AOC.create(day_number, config)
 end
 
 function AOC.run_day(day_number, config)
+  print(day_number)
   local data = AOC.get_input(day_number, config.test_data)
   if config.show_input_data then
     AOC.print_input(data)
