@@ -162,7 +162,7 @@ function AOC.create(day_number, config)
   os.execute("mkdir " .. day_number)
   os.execute("touch " .. day_number .. "/input.data")
   os.execute("touch " .. day_number .. "/test.data")
-  os.execute("cat .config/test.lua " .. day_number .. "/test.lua")
+  os.execute("cat .config/test.lua >> " .. day_number .. "/test.lua")
   os.execute("cat .config/init_day.lua >> " .. day_number .. "/solution.lua")
 end
 
