@@ -95,6 +95,24 @@ function acc.sum(accumulator, current)
   return accumulator + current
 end
 
+local sort = {}
+AOC.sort = sort
+function sort.by_year(date1, date2)
+  if date1.year == date2.year then
+    if date1.month == date2.month then
+      if date1.day == date2.day then
+        if date1.hour == date2.hour then
+          return date1.minute < date2.minute
+        end
+        return date1.hour < date2.hour
+      end
+      return date1.day < date2.day
+    end
+    return date1.month < date2.month
+  end
+  return date1.year < date2.year
+end
+
 function AOC.split(str, char)
   if char == "" then return AOC.split_each_char(str) end
   local result = {}
