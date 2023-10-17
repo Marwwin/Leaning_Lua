@@ -8,15 +8,11 @@ end
 
 function d:part2(input_data)
   local input = input_data[1]
-  local ascii_a = ("a"):byte()
-  local ascii_z = ("z"):byte()
-  local delta = 32
   local shortest = math.maxinteger
-  local final = ""
-  for i = ascii_a, ascii_z, 1 do
+  for i = ("a"):byte(), ("z"):byte(), 1 do
     local small = string.char(i)
-    local large = string.char(i - delta)
-    local result = string.gsub(input, "[" .. small .. large .. "]", "")
+    local large = string.char(i - 32)
+    local result = input:gsub("[" .. small .. large .. "]", "")
     result = d.react_chain(result)
     if #result < shortest then shortest = #result end
   end
