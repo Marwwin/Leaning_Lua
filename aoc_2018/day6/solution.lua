@@ -4,10 +4,10 @@ local FList = require("utils.FList")
 local day = {}
 
 function day:part1(input_data)
-  local coordinates = FList(AOC.reduce(input_data, function(acc, cur)
+  local coordinates = FList(input_data):reduce(function(acc, cur)
     table.insert(acc, day.parse_input(cur))
     return acc
-  end, {}))
+  end, FList({}))
   local infinites = day.find_coordinates_that_go_infinite(coordinates)
   local result = day.generate_closest(coordinates)
   result = result
@@ -24,6 +24,22 @@ function day:part1(input_data)
 end
 
 function day:part2(input_data)
+  local coordinates = FList(input_data):reduce(function(acc, cur)
+    table.insert(acc, day.parse_input(cur))
+    return acc
+  end, FList({}))
+  local max_x = math.max(table.unpack(coordinates:map(function(e) return e.x end)))
+  local max_y = math.max(table.unpack(coordinates:map(function(e) return e.y end)))
+  local result = FList({})
+  for y = 0, max_y, 1 do
+    for x = 0, max_x, 1 do
+      table.insert(result, day.get_cumulative_distance(coordinates, x, y))
+    end
+  end
+
+  local LIMIT = 10000
+  return result
+  :reduce(function(acc,cur) print(cur, LIMIT) if cur < LIMIT then acc = acc + 1 end return acc end,0)
 end
 
 function day.generate_closest(list)
@@ -32,7 +48,7 @@ function day.generate_closest(list)
   local result = FList({})
   for y = 0, max_y, 1 do
     for x = 0, max_x, 1 do
-      table.insert(result,day.find_closest(list,x,y))
+      table.insert(result, day.find_closest(list, x, y))
     end
   end
   return result
@@ -68,6 +84,14 @@ function day.find_closest(list, x, y)
     end
   end
   if same then return -1 else return id end
+end
+
+function day.get_cumulative_distance(list, x, y)
+  local result = 0
+  for index, value in ipairs(list) do
+    result = result + value:manhattan(x, y)
+  end
+  return result
 end
 
 function day.parse_input(str)

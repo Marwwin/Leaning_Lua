@@ -62,6 +62,20 @@ function F:unique()
   return F(result)
 end
 
+function F:set()
+  local set = {}
+  for _, value in ipairs(self) do
+    set[value] = true
+  end
+  return set
+end
+
+function F:ifor(fn)
+  for index, value in ipairs(self) do
+    self[index] = fn(value)
+  end
+end
+
 function F:contains(val)
   for _, value in ipairs(self) do
     if value == val then return true end
