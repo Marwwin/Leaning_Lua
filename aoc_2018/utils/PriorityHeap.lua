@@ -10,11 +10,13 @@ local metatable = {
 setmetatable(H, metatable)
 
 function H:peek()
+  --  for key, value in pairs(self.heap) do
+  --     print("hep",key,value)
+  --   end
   return self.heap[1]
 end
 
 function H:push(value)
-  print("psh")
   table.insert(self.heap, value)
   self:upheap()
 end
@@ -65,11 +67,26 @@ function H:downheap()
   end
 end
 
-function H.from_list(list)
-  local heap = H()
-  for key, value in pairs(list) do
-    heap:push({key})
+function H:print()
+  for key, value in pairs(self.heap) do
+    print(key)
   end
 end
-  
+
+function H.from_keys(list)
+  local heap = H()
+  for key, _ in pairs(list) do
+    heap:push(key)
+  end
+  return heap
+end
+
+function H.from_values(list)
+  local heap = H()
+  for _, value in pairs(list) do
+    heap:push(value)
+  end
+  return heap
+end
+
 return H

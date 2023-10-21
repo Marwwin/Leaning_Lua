@@ -9,6 +9,9 @@ local metatable = {
   end,
 }
 
+setmetatable(F, metatable)
+
+
 function F:map(func)
   local result = {}
   for i, value in ipairs(self) do
@@ -77,7 +80,7 @@ function F:ifor(fn)
 end
 
 function F:contains(val)
-  for _, value in ipairs(self) do
+  for _, value in pairs(self) do
     if value == val then return true end
   end
   return false
@@ -89,6 +92,5 @@ function F:print()
   end
 end
 
-setmetatable(F, metatable)
 
 return F
