@@ -47,7 +47,7 @@ end
 
 function F:size()
   local result = 0
-  for _, _ in ipairs(self) do
+  for _, _ in pairs(self) do
     result = result + 1
   end
   return result

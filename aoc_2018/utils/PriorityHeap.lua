@@ -69,7 +69,7 @@ end
 
 function H:print()
   for key, value in pairs(self.heap) do
-    print(key)
+    print(key, value)
   end
 end
 
@@ -87,6 +87,14 @@ function H.from_values(list)
     heap:push(value)
   end
   return heap
+end
+
+function H:size()
+  local result = 0
+  for _,_ in pairs(self.heap) do
+    result = result + 1
+end
+return result  
 end
 
 return H
