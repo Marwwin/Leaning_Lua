@@ -1,30 +1,32 @@
-local H = {}
+local Stack = {}
 
 local metatable = {
-  __call = function ()
-    local self = setmetatable({}, {__index = self})
-    self.heap = {}
-    return self
+  __call = function(self)
+    local o = {}
+    setmetatable(o, { __index = Stack })
+    return o
   end,
 }
 
-function H:push(value)
-  table.insert(self.heap, value)
-  self:upheap()
+setmetatable(Stack, metatable)
+
+function Stack:push(value)
+  table.insert(self, 1, value)
 end
 
-function H:upheap()
-  local heap = self.heap
-  local child = #heap
-  while child > 1 do
-    local parent = math.floor(child / 2)
-    if heap[child] < heap[parent] then
-      heap[parent], heap[child] = heap[child], heap[parent]
-      child = parent
-    else
-      break
-    end
-  end
+function Stack:pop()
+  if self:size() == 0 then return nil end
+  return table.remove(self, 1)
 end
 
-return H
+function Stack:top()
+  return self[1]
+end
+
+function Stack:size()
+  local size = 0
+  for _, _ in pairs(self) do size = size + 1 end
+  return size
+end
+
+return Stack
