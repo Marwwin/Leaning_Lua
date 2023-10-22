@@ -79,7 +79,6 @@ end
 
 function H.from_keys(list, priority_fn)
   local heap = H()
-  print("heap",heap)
   for key, _ in pairs(list) do
     heap:push(key,priority_fn)
   end

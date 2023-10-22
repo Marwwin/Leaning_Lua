@@ -86,11 +86,18 @@ function F:contains(val)
   return false
 end
 
-function F:print()
-  for key, value in pairs(self) do
-   if type(value) == "table" then F(value):print() else print(value) end 
+function F:take(n)
+  local result = {}
+  for i = 1, n, 1 do
+    table.insert(result, table.remove(self,i - #result))
   end
+  return result
 end
 
+function F:print()
+  for key, value in pairs(self) do
+    if type(value) == "table" then F(value):print() else print(value) end
+  end
+end
 
 return F

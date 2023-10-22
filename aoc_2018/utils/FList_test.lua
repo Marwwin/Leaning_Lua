@@ -1,4 +1,4 @@
-local FList = require "FList"
+local FList = require("utils.FList")
 describe("FList simple tests", function()
   it("should map", function()
     local list = FList({ 1, 2, 3 })
@@ -19,6 +19,13 @@ describe("FList simple tests", function()
   it("should return unique elements as new FList", function()
     local list = FList({ 1, 6, 3,1,6,3,3,6,1,4 })
     assert.are.same({1,6,3,4}, list:unique())
+  end)
+  it("should take n elements", function ()
+    local list = FList({1,2,3,4,5,6})
+    local taken = list:take(3)
+    assert.are.same({1,2,3}, taken)
+    assert.are.same({4,5,6}, list)
+
   end)
 end)
 
