@@ -4,10 +4,6 @@ local PriorityHeap = require("utils.PriorityHeap")
 local Set = require("utils.Set")
 local d = {}
 
-function table.p(t)
-  print(t[0])
-end
-
 function d:part1(input_data)
   local steps = FList(input_data):reduce(function(acc, str)
     local step = d.parse_input(str)
@@ -16,14 +12,14 @@ function d:part1(input_data)
     return acc
   end, {})
   local starting_steps = d.get_starting_steps(steps)
-  local queue = PriorityHeap.from_keys(starting_steps)
+  local queue = PriorityHeap.from_keys(starting_steps, PriorityHeap.priority.char_value)
 
   local result = FList({})
-  while queue:peek() do
-    table.insert(result, queue:pop())
+  while queue:top() do
+    table.insert(result, queue:pop().value)
     for next_step, required_steps in pairs(steps) do
       if d.all_steps_completed(required_steps, result) then
-        queue:push(next_step)
+        queue:push(next_step, PriorityHeap.priority.char_value)
         steps[next_step] = nil
       end
     end
@@ -38,89 +34,44 @@ function d:part2(input_data)
     table.insert(acc[step.stop], step.start)
     return acc
   end, FList({}))
-  local starting_steps = d.get_starting_steps(steps)
-  local queue = PriorityHeap.from_keys(starting_steps)
+
+  local available_steps = PriorityHeap().from_keys(
+    d.get_starting_steps(steps), PriorityHeap.priority.char_value)
 
   local result = FList({})
   local workers = 5
-  local timeline = FList({})
+  local working = PriorityHeap()
   local time = 0
-  while steps:size() > 0  do
-    print(steps:size())
+  local delta <const> = 60 - 64
+  while steps:size() > 0 or available_steps:size() > 0 or working:size() > 0 do
     --put workers to workers
-    while workers > 0 and queue:size() > 0 do
-      local step = queue:pop()
-      print(step, queue:size())
-      local time_stamp = step:byte() + 60 - 64
-      timeline[time_stamp] = step
+    while workers > 0 and available_steps:size() > 0 do
+      local step = available_steps:pop().value
+      local time_stamp = time + step:byte() + delta
+      working:push(step, time_stamp)
       workers = workers - 1
-      steps[step] = nil
     end
-print("workers",workers,"queue",queue:print())
 
-    local next_time_stamp = math.maxinteger
-    local next_step
-    for time_stamp, step in pairs(timeline) do
-      if time_stamp < next_time_stamp then
-        next_step = step
-        next_time_stamp = time_stamp
+    -- get next step
+    local next_step = working:pop()
+    workers = workers + 1
+    table.insert(result, next_step.value)
+    time = next_step.priority
+
+    -- add new free steps to queue
+    for step, required_steps in pairs(steps) do
+      local index_to_remove
+      for index, value in pairs(required_steps) do
+        if value == next_step.value then index_to_remove = index end
+      end
+      if index_to_remove then table.remove(required_steps, index_to_remove) end
+      if #required_steps == 0 then
+        steps[step] = nil
+        available_steps:push(step, PriorityHeap.priority.char_value)
       end
     end
-    print("next ",next_time_stamp, next_step)
-
-    table.insert(result, next_step)
-    for step, required in pairs(steps) do
-      local new_required = {}
-      for i, required_step in pairs(required) do
-        if required_step ~= next_step then
-          table.insert(new_required, required_step)
-        end
-      end
-
-      if not new_required then queue:push(step) end
-      steps[step] = new_required
-    end
-    time = next_time_stamp
-    --    time = time + 1
-    --     print("Start",time,"workers",workers,"queue",queue:print(),"q",timeline:print())
-    --     workers = d.put_workers_to_work(workers,queue, timeline, steps)
-    --     print("workers are working", workers)
-    --     if timeline[time] then
-    --       for key, value in pairs(timeline[time]) do
-    --         table.insert(result, value)
-    --         workers = workers + 1
-    --       end
-    --       for next_step, required_steps in pairs(steps) do
-    --         if d.all_steps_completed(required_steps, result) then
-    --           queue:push(next_step)
-    --           steps[next_step] = nil
-    --         end
-    --       end
-    --     end
   end
-
-  print("time", time)
-  --   return time
-  return table.concat(result, "")
-end
-
-function d.put_workers_to_work(workers, queue, timeline, steps)
-  local delta <const> = 64
-  local delay <const> = 60
-  while workers > 0 and queue:peek() ~= false do
-    local cur = steps[queue:pop()]
-    print(cur)
-    if not cur then break end
-    print("mext", cur)
-    local t = delay + cur:byte() - delta
-    if not timeline[t] then
-      timeline[t] = { cur }
-    else
-      table.insert(timeline[t], cur)
-    end
-    workers = workers - 1
-  end
-  return workers
+  return time
 end
 
 function d.get_starting_steps(steps)
@@ -128,7 +79,7 @@ function d.get_starting_steps(steps)
   local afters = Set()
   for key, value in pairs(steps) do
     afters:add(key)
-    for index, v in ipairs(value) do
+    for _, v in ipairs(value) do
       starts:add(v)
     end
   end
@@ -141,6 +92,10 @@ function d.all_steps_completed(required_steps, result)
     if not result:contains(step) then return false end
   end
   return true
+end
+
+function d.put_workers_to_work(workers, queue, timeline, steps)
+
 end
 
 function d.parse_input(str)

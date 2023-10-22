@@ -2,22 +2,26 @@ local H = {}
 
 local metatable = {
   __call = function(self)
-    self.heap = {}
-    return self
+    return H.new()
   end,
+  __index = H
 }
+
+function H.new()
+  return setmetatable({heap = {}},metatable)
+end
 
 setmetatable(H, metatable)
 
-function H:peek()
-  --  for key, value in pairs(self.heap) do
-  --     print("hep",key,value)
-  --   end
+function H:top()
   return self.heap[1]
 end
 
-function H:push(value)
-  table.insert(self.heap, value)
+function H:push(value, priority)
+  if type(priority) == "function" then
+    priority = priority(value)
+  end
+  table.insert(self.heap, { value = value, priority = priority })
   self:upheap()
 end
 
@@ -37,7 +41,7 @@ function H:upheap()
   local child = #heap
   while child > 1 do
     local parent = math.floor(child / 2)
-    if heap[child] < heap[parent] then
+    if heap[child].priority < heap[parent].priority then
       heap[parent], heap[child] = heap[child], heap[parent]
       child = parent
     else
@@ -55,8 +59,8 @@ function H:downheap()
     local right = parent * 2 + 1
     local smallest = parent
 
-    if left <= heapSize and heap[left] < heap[smallest] then smallest = left end
-    if right <= heapSize and heap[right] < heap[smallest] then smallest = right end
+    if left <= heapSize and heap[left].priority < heap[smallest].priority then smallest = left end
+    if right <= heapSize and heap[right].priority < heap[smallest].priority then smallest = right end
 
     if smallest ~= parent then
       heap[parent], heap[smallest] = heap[smallest], heap[parent]
@@ -69,32 +73,39 @@ end
 
 function H:print()
   for key, value in pairs(self.heap) do
-    print(key, value)
+    print(value.value,value.priority)
   end
 end
 
-function H.from_keys(list)
+function H.from_keys(list, priority_fn)
   local heap = H()
+  print("heap",heap)
   for key, _ in pairs(list) do
-    heap:push(key)
+    heap:push(key,priority_fn)
   end
   return heap
 end
 
-function H.from_values(list)
-  local heap = H()
-  for _, value in pairs(list) do
-    heap:push(value)
-  end
-  return heap
-end
+-- function H.from_values(list)
+--   local heap = H()
+--   for _, value in pairs(list) do
+--     heap:push(value)
+--   end
+--   return heap
+-- end
 
 function H:size()
   local result = 0
-  for _,_ in pairs(self.heap) do
+  for _, _ in pairs(self.heap) do
     result = result + 1
+  end
+  return result
 end
-return result  
+
+local priority = {}
+H.priority = priority
+function priority.char_value(char)
+  return char:byte() - 96
 end
 
 return H
