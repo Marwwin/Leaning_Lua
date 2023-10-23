@@ -3,7 +3,7 @@ local Queue = {}
 local metatable = {
   __call = function(self)
     local o = {}
-    setmetatable(o, { __index = Queue })
+    setmetatable(o, { __index = self })
     return o
   end
 }

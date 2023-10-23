@@ -1,4 +1,4 @@
-local V = {}
+local Vec2D = {}
 
 local metatable = {
   __call = function(self, x, y)
@@ -8,7 +8,9 @@ local metatable = {
   end,
 }
 
-function V:manhattan(vec, y)
+setmetatable(Vec2D, metatable)
+
+function Vec2D:manhattan(vec, y)
   if y then
     local x = vec
     return math.abs(self.x - x) + math.abs(self.y - y)
@@ -16,6 +18,4 @@ function V:manhattan(vec, y)
   return math.abs(self.x - vec.x) + math.abs(self.y - vec.y)
 end
 
-setmetatable(V, metatable)
-
-return V
+return Vec2D
