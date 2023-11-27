@@ -38,28 +38,32 @@ end
 M.DFS = function(start, goal, is_walkable, map)
   local q = Stack()
   q:push(start)
+  -- TODO NOT THIS CALLS BFS_ 
+  -- That function should have a better more generic name probably?
+  -- Or then just use DFS_ as is
   return M.BFS_(goal, is_walkable, map, q, {}, {})
 end
 
-M.DFS_ = function(goal, is_walkable, mapp, q, path, seen)
-  local next_node = q:pop()
-  path[next_node:to_string()] = true
-  seen[next_node:to_string()] = true
-  for i, neighbour in ipairs(next_node:neighbours(true)) do
-    if seen[neighbour:to_string()] == nil and is_walkable(neighbour, mapp) then
-      seen[neighbour:to_string()] = true
-      if neighbour.x >= 0 and neighbour.x <= SIZE and neighbour.y >= 0 and neighbour.y <= SIZE then
-        q:push(neighbour)
-      end
-    end
-  end
-  if next_node:equals(goal) then
-   M.backtrack(path)
-  else
-    M.print_map(path, mapp, goal)
-    return M.DFS_(goal, is_walkable, mapp, q, path, seen)
-  end
-end
+-- M.DFS_ = function(goal, is_walkable, map, q, path, seen)
+--   local next_node = q:pop()
+--   path[next_node:to_string()] = true
+--   seen[next_node:to_string()] = true
+--   for i, neighbour in ipairs(next_node:neighbours()) do
+--     print(next_node:to_string(),"neighbour",i,neighbour:to_string())
+--     if seen[neighbour:to_string()] == nil and is_walkable(neighbour, map) then
+--       seen[neighbour:to_string()] = true
+--       if neighbour.x >= 0 and neighbour.x <= SIZE and neighbour.y >= 0 and neighbour.y <= SIZE then
+--         q:push(neighbour)
+--       end
+--     end
+--   end
+--   if next_node:equals(goal) then
+--    M.backtrack(path)
+--   else
+--     M.print_map(path, map, goal)
+--     return M.DFS_(goal, is_walkable, map, q, path, seen)
+--   end
+-- end
 
 M.backtrack = function(path)
   print("GG")
