@@ -1,55 +1,103 @@
 local Vec2D = require("utils.Vec2D")
+local Stack = require("utils.Stack")
 local Queue = require("utils.Queue")
+local PriorityQueue = require('utils.PriorityHeap')
 local Node = require("utils.Node")
 
-local SYMBOL  = {
-  PATH = "path",
-  WALL = "wall"
-}
-local ASCII_COLORS = {
-  reset = "\27[0m",
-  red = "\27[31m",
-  green = "\27[32m",
-  white = "\27[37m",
-  yellow = "\27[33m",
-  blue = "\27[34m",
-  magenta = "\27[35m",
-}
 local SIZE = 20
 local M = {}
 
 -- Breadth First Search
 
-M.BFS = function(start, goal, is_walkable_fn, map, size)
-  print(size)
+M.BFS = function(start, goal, is_walkable_fn, map)
   local q = Queue()
   q:push(Node(start))
-  return M.BFS_(goal, is_walkable_fn, map, q, {}, size)
+  return M.BFS_(goal, is_walkable_fn, map, q, {})
 end
 
-M.BFS_ = function(goal, is_walkable, map, q, seen, size)
+M.BFS_ = function(goal, is_walkable, map, q, seen)
   local current = q:pop()
   local current_node = current.node
   if current_node:equals(goal) then
     local result = M.backtrack(current, Vec2D(3, 3))
-    for _, path in ipairs(result) do
-      map[path:to_string()] = SYMBOL.PATH
-      M.print_map(map, seen, goal)
+    for index, path in ipairs(result) do
+      map[path:to_string()] = "@"
+      M.print_map(seen, map, goal)
     end
     return
   end
   seen[current_node:to_string()] = current
   for i, neighbour in ipairs(current_node:neighbours(true)) do
     if seen[neighbour:to_string()] == nil and is_walkable(neighbour, map) then
-      if neighbour.x >= 0 and neighbour.x <= size and neighbour.y >= 0 and neighbour.y <= size then
-        seen[neighbour:to_string()] = true
+      seen[neighbour:to_string()] = true
+      if neighbour.x >= 0 and neighbour.x <= SIZE and neighbour.y >= 0 and neighbour.y <= SIZE then
         q:push(Node(neighbour, current))
       end
     end
   end
-  M.print_map(map, seen, goal)
-  return M.BFS_(goal, is_walkable, map, q, seen, size)
+  M.print_map(seen, map, goal)
+  return M.BFS_(goal, is_walkable, map, q, seen)
 end
+
+-- Depth First Search
+
+M.DFS = function(start, goal, is_walkable, map)
+  local q = Stack()
+  q:push(start)
+  -- TODO NOT THIS CALLS BFS_
+  -- That function should have a better more generic name probably?
+  -- Or then just use DFS_ as is
+  return M.DFS_(goal, is_walkable, map, q, {}, {})
+end
+
+M.DFS_ = function(goal, is_walkable, map, q, path, seen)
+  local next_node = q:pop()
+  path[next_node:to_string()] = true
+  seen[next_node:to_string()] = true
+  for i, neighbour in ipairs(next_node:neighbours()) do
+    if seen[neighbour:to_string()] == nil and is_walkable(neighbour, map) then
+      seen[neighbour:to_string()] = true
+      if neighbour.x >= 0 and neighbour.x <= SIZE and neighbour.y >= 0 and neighbour.y <= SIZE then
+        q:push(neighbour)
+      end
+    end
+  end
+  if next_node:equals(goal) then
+    M.backtrack(path)
+  else
+    M.print_map(path, map, goal)
+    return M.DFS_(goal, is_walkable, map, q, path, seen)
+  end
+end
+
+M.AStar = function(start, goal, is_walkable, map)
+  local q = PriorityQueue()
+  q:push(start, start:manhattan(goal))
+  M.AStar_(goal, is_walkable, map, q, {}, {})
+end
+
+M.AStar_ = function(goal, is_walkable, map, q, path, seen)
+  local next_node = q:pop().value
+  print("new", next_node:to_string())
+  path[next_node:to_string()] = true
+  seen[next_node:to_string()] = true
+  for i, neighbour in ipairs(next_node:neighbours()) do
+    if seen[neighbour:to_string()] == nil and is_walkable(neighbour, map) then
+      seen[neighbour:to_string()] = true
+      if neighbour.x >= 0 and neighbour.x <= SIZE and neighbour.y >= 0 and neighbour.y <= SIZE then
+        print(" ", neighbour:to_string(), neighbour:manhattan(goal))
+        q:push(neighbour, neighbour:manhattan(goal))
+      end
+    end
+  end
+  if next_node:equals(goal) then
+    M.backtrack(path)
+  else
+    M.print_map(path, map, goal)
+    return M.AStar_(goal, is_walkable, map, q, path, seen)
+  end
+end
+
 
 M.backtrack = function(current, result)
   if current == nil then
@@ -59,27 +107,30 @@ M.backtrack = function(current, result)
   return M.backtrack(current.parent, result)
 end
 
-
-M.print_map = function(map, seen, goal)
-  os.execute("sleep 0.04")
+local colour = {
+  reset = "\27[0m",
+  red = "\27[31m",
+  green = "\27[32m",
+  white = "\27[37m"
+}
+M.print_map = function(m, terrain, goal)
+  os.execute("sleep 0.05")
   os.execute("clear")
   for y = 0, SIZE, 1 do
     for x = 0, SIZE, 1 do
       local v = x .. " " .. y
       if x == goal.x and y == goal.y then
-        io.write(ASCII_COLORS.yellow)
         io.write(" G ")
-        io.write(ASCII_COLORS.reset)
-      elseif map[v] == SYMBOL.WALL then
+      elseif terrain[v] == "#" then
         io.write(" # ")
-      elseif map[v] == SYMBOL.PATH then
-        io.write(ASCII_COLORS.blue)
+      elseif terrain[v] == "@" then
+        io.write(colour.white)
         io.write(" @ ")
-        io.write(ASCII_COLORS.reset)
-      elseif seen[v] ~= nil then
-        io.write(ASCII_COLORS.red)
+        io.write(colour.reset)
+      elseif m[v] ~= nil then
+        io.write(colour.red)
         io.write(" * ")
-        io.write(ASCII_COLORS.reset)
+        io.write(colour.reset)
       else
         io.write(" . ")
       end
@@ -189,7 +240,7 @@ map["12 19"] = "#"
 map["11 19"] = "#"
 map["10 19"] = "#"
 map["10 18"] = "#"
-M.BFS(Vec2D(3, 3), Vec2D(11, 10), walkable, map, 20)
+M.BFS(Vec2D(3, 3), Vec2D(7, 9), walkable, map)
 -- M.DFS(Vec2D(3, 3), Vec2D(12, 10), walkable, map)
 -- M.AStar(Vec2D(3, 3), Vec2D(17, 18), walkable, map)
 
